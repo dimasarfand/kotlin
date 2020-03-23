@@ -65,7 +65,7 @@ class CoroutineAsyncStackTraceProvider : AsyncStackTraceProvider {
 
         if (threadAndContextSupportsEvaluation(suspendContext, frameProxy))
             return ContinuationHolder.lookupForResumeMethodContinuation(suspendContext, frameProxy)
-                ?.getAsyncStackTraceIfAny()?.stackFrameItems
+                ?.getAsyncStackTraceIfAny()
         return null
     }
 

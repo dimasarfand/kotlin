@@ -5,6 +5,8 @@ plugins {
 
 dependencies {
     implementation(project(":idea:jvm-debugger:jvm-debugger-core"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.3.3")
 
     compileOnly(toolsJarApi())
     compileOnly(intellijDep())

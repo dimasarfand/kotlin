@@ -25,7 +25,6 @@ class CoroutineNoLibraryProxy(val executionContext: DefaultExecutionContext) : C
                 "CANCELLABLE_CONTINUATION" -> cancellableContinuation(resultList)
                 else -> dispatchedContinuation(resultList)
             }
-
         } else
             log.warn("Remote JVM doesn't support canGetInstanceInfo capability (perhaps JDK-8197943).")
         return resultList
@@ -53,8 +52,9 @@ class CoroutineNoLibraryProxy(val executionContext: DefaultExecutionContext) : C
         val mirror = ccMirrorProvider.mirror(dispatchedContinuation, executionContext) ?: return null
         val continuation = mirror.delegate?.continuation ?: return null
         val ch = ContinuationHolder(continuation, executionContext)
-        val coroutineWithRestoredStack = ch.getAsyncStackTraceIfAny() ?: return null
-        return CoroutineInfoData.suspendedCoroutineInfoData(coroutineWithRestoredStack, continuation)
+        val coroutineHolder = CoroutineHolder.lookup(ch.value(), executionContext, ch.getAsyncStackTraceIfAny()) ?: return null
+        val coroutineInfoData = CoroutineInfoData.suspendedCoroutineInfoData(coroutineHolder, continuation)
+        return coroutineInfoData
     }
 
     private fun dispatchedContinuation(resultList: MutableList<CoroutineInfoData>): Boolean {
@@ -75,10 +75,10 @@ class CoroutineNoLibraryProxy(val executionContext: DefaultExecutionContext) : C
         debugMetadataKtType ?: return null
         val initialContinuation = dispatchedContinuation.getValue(continuation) as ObjectReference
         val ch = ContinuationHolder(initialContinuation, executionContext)
-        val coroutineWithRestoredStack = ch.getAsyncStackTraceIfAny() ?: return null
-        return CoroutineInfoData.suspendedCoroutineInfoData(coroutineWithRestoredStack, initialContinuation)
+        val coroutineHolder = CoroutineHolder.lookup(ch.value(), executionContext, ch.getAsyncStackTraceIfAny()) ?: return null
+        val suspendedCoroutineInfoData = CoroutineInfoData.suspendedCoroutineInfoData(coroutineHolder, initialContinuation)
+        return suspendedCoroutineInfoData
     }
-
 }
 
 fun maxCoroutines() = Registry.intValue("kotlin.debugger.coroutines.max", 1000).toLong()

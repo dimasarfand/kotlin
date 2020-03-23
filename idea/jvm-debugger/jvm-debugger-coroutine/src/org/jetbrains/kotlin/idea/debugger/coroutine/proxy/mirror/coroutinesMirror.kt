@@ -16,15 +16,19 @@ abstract class BaseMirror<T>(val name: String, context: DefaultExecutionContext)
     protected val cls = context.findClass(name) ?: throw IllegalStateException("Can't find class ${name} in remote jvm.")
 
     fun makeField(fieldName: String): Field =
-        cls.fieldByName(fieldName) // childContinuation
+        cls.fieldByName(fieldName)
 
     fun makeMethod(methodName: String): Method =
         cls.methodsByName(methodName).single()
 
+    fun makeMethod(methodName: String, signature: String): Method =
+        cls.methodsByName(methodName, signature).single()
+
     fun isCompatible(value: ObjectReference) =
         value.referenceType().isSubTypeOrSame(name)
 
-    fun mirror(value: ObjectReference, context: DefaultExecutionContext): T? {
+    fun mirror(value: ObjectReference?, context: DefaultExecutionContext): T? {
+        value ?: return null
         if (!isCompatible(value)) {
             log.warn("Value ${value.referenceType()} is not compatible with $name.")
             return null
@@ -32,31 +36,61 @@ abstract class BaseMirror<T>(val name: String, context: DefaultExecutionContext)
             return fetchMirror(value, context)
     }
 
-    fun staticObjectValue(fieldName: String): ObjectReference {
+    fun staticObjectValue(fieldName: String): ObjectReference? {
         val keyFieldRef = makeField(fieldName)
-        return cls.getValue(keyFieldRef) as ObjectReference
+        return cls.getValue(keyFieldRef) as? ObjectReference
     }
 
+    fun staticMethodValue(instance: ObjectReference?, method: Method, context: DefaultExecutionContext, vararg values: Value?) =
+        instance?.let {
+            context.invokeMethod(it, method, values.asList()) as? ObjectReference
+        }
+
+    fun staticMethodValue(method: Method, context: DefaultExecutionContext, vararg values: Value?) =
+        if (cls is ClassType) {
+            context.invokeMethod(cls, method, values.asList()) as? ObjectReference
+        } else
+            null
+
     fun stringValue(value: ObjectReference, field: Field) =
-        (value.getValue(field) as StringReference).value()
+        (value.getValue(field) as? StringReference)?.value()
+
+    fun byteValue(value: ObjectReference, field: Field) =
+        (value.getValue(field) as? ByteValue)?.value()
+
+    fun threadValue(value: ObjectReference, field: Field) =
+        value.getValue(field) as? ThreadReference
 
     fun stringValue(value: ObjectReference, method: Method, context: DefaultExecutionContext) =
-        (context.invokeMethod(value, method, emptyList()) as StringReference).value()
+        (context.invokeMethod(value, method, emptyList()) as? StringReference)?.value()
 
-    fun objectValue(value: ObjectReference, method: Method, context: DefaultExecutionContext, vararg values: Value) =
-        context.invokeMethodAsObject(value, method, *values)
+    fun objectValue(value: ObjectReference?, method: Method, context: DefaultExecutionContext, vararg values: Value): ObjectReference? {
+        value ?: return null
+        return context.invokeMethodAsObject(value, method, *values)
+    }
 
     fun longValue(value: ObjectReference, method: Method, context: DefaultExecutionContext, vararg values: Value) =
-        (context.invokeMethodAsObject(value, method, *values) as LongValue).longValue()
+        (context.invokeMethod(value, method, values.asList()) as? LongValue)?.longValue()
+
+    fun intValue(value: ObjectReference, method: Method, context: DefaultExecutionContext, vararg values: Value) =
+        (context.invokeMethod(value, method, values.asList()) as? IntegerValue)?.intValue()
+
+    fun booleanValue(value: ObjectReference?, method: Method, context: DefaultExecutionContext, vararg values: Value): Boolean? {
+        value ?: return null
+        return (context.invokeMethod(value, method, values.asList()) as? BooleanValue)?.booleanValue()
+    }
 
     fun objectValue(value: ObjectReference, field: Field) =
-        value.getValue(field) as ObjectReference
+        value.getValue(field) as ObjectReference?
 
     fun intValue(value: ObjectReference, field: Field) =
-        (value.getValue(field) as IntegerValue).intValue()
+        (value.getValue(field) as? IntegerValue)?.intValue()
 
     fun longValue(value: ObjectReference, field: Field) =
-        (value.getValue(field) as LongValue).longValue()
+        (value.getValue(field) as? LongValue)?.longValue()
+
+    fun booleanValue(value: ObjectReference?, field: Field) =
+        (value?.getValue(field) as? BooleanValue)?.booleanValue()
 
     protected abstract fun fetchMirror(value: ObjectReference, context: DefaultExecutionContext): T?
 }
@@ -123,10 +157,10 @@ class CancellableContinuationImpl(context: DefaultExecutionContext) :
 
 data class MirrorOfCancellableContinuationImpl(
     val that: ObjectReference,
-    val decision: Int,
+    val decision: Int?,
     val delegate: MirrorOfDispatchedContinuation?,
-    val resumeMode: Int,
-    val submissionTyme: Long,
+    val resumeMode: Int?,
+    val submissionTyme: Long?,
     val jobContext: MirrorOfCoroutineContext?
 )
 

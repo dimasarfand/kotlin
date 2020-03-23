@@ -70,9 +70,6 @@ private fun Method.isGetCOROUTINE_SUSPENDED() =
 fun DefaultExecutionContext.findCoroutineMetadataType() =
     debugProcess.invokeInManagerThread { findClassSafe("kotlin.coroutines.jvm.internal.DebugMetadataKt") }
 
-fun DefaultExecutionContext.findCoroutineAnnotationMetadataType() =
-    debugProcess.invokeInManagerThread { findClassSafe("kotlin.coroutines.jvm.internal.DebugMetadata") as InterfaceType? }
-
 fun DefaultExecutionContext.findDispatchedContinuationReferenceType(): List<ReferenceType>? =
     vm.classesByName("kotlinx.coroutines.DispatchedContinuation")
 

@@ -63,3 +63,22 @@ class JavaLangMirror(context: DefaultExecutionContext) {
     private fun fetchClassName(instance: ObjectReference) =
         (instance.getValue(declaringClassFieldRef) as? StringReference)?.value() ?: ""
 }
+
+class JavaUtilList(context: DefaultExecutionContext) :
+    BaseMirror<MirrorOfJavaLangList>("java.util.List", context) {
+    val sizeMethod: Method = makeMethod("size")
+    val getMethod: Method = makeMethod("get")
+
+    override fun fetchMirror(value: ObjectReference, context: DefaultExecutionContext): MirrorOfJavaLangList? {
+        val list = mutableListOf<ObjectReference>()
+        val size = intValue(value, sizeMethod, context) ?: 0
+        for (it in 0 until size) {
+            val reference = objectValue(value, getMethod, context, context.vm.mirrorOf(it)) ?: continue
+            list.add(reference)
+        }
+        return MirrorOfJavaLangList(value, list)
+    }
+}
+
+data class MirrorOfJavaLangList(val that: ObjectReference, val values: List<ObjectReference>)
+

@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.idea.debugger.coroutine.data.CoroutineStackFrameItem
 import org.jetbrains.kotlin.idea.debugger.coroutine.data.State
 import org.jetbrains.kotlin.idea.debugger.coroutine.proxy.mirror.JavaLangMirror
 import org.jetbrains.kotlin.idea.debugger.coroutine.proxy.mirror.MirrorOfCoroutineContext
+import org.jetbrains.kotlin.idea.debugger.coroutine.util.logger
 import org.jetbrains.kotlin.idea.debugger.evaluate.DefaultExecutionContext
 
 data class CoroutineHolder(
@@ -19,11 +20,27 @@ data class CoroutineHolder(
     val stackFrameItems: List<CoroutineStackFrameItem>
 ) {
     companion object {
+        val log by logger
+
         fun lookup(
-            value: ObjectReference?,
+            input: ObjectReference?,
             context: DefaultExecutionContext,
             stackFrameItems: List<CoroutineStackFrameItem>
         ): CoroutineHolder? {
+            val value = if (input?.type()?.isAbstractCoroutine() ?: false)
+                input
+            else {
+                // kotlinx.coroutines.debug.internal.DebugProbesImpl$CoroutineOwner
+                val delegate = input?.referenceType()?.fieldByName("delegate") ?: null
+                val coroutine = input?.getValue(delegate) as? ObjectReference
+                if (coroutine != null) {
+                    coroutine
+                } else {
+                    log.warn("Coroutine information not found, ${input?.type()} is not subtype of AbstractCoroutine as expected.")
+                    null
+                }
+            }
+
             val state = state(value, context) ?: return null
             val realState =
                 if (stackFrameItems.isEmpty()) state.copy(state = State.CREATED) else state.copy(state = State.SUSPENDED)

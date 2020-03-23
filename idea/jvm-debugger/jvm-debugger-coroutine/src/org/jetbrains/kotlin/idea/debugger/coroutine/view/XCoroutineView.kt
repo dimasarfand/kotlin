@@ -57,8 +57,6 @@ class XCoroutineView(val project: Project, val session: XDebugSession) :
     val someCombobox = ComboBox<String>()
     val panel = XDebuggerTreePanel(project, session.debugProcess.editorsProvider, this, null, XCOROUTINE_POPUP_ACTION_GROUP, null)
     val alarm = SingleAlarm(Runnable { resetRoot() }, VIEW_CLEAR_DELAY, this)
-//    val javaDebugProcess =
-//    val debugProcess: DebugProcessImpl = javaDebugProcess.debuggerSession.process
     val renderer = SimpleColoredTextIconPresentationRenderer()
     val managerThreadExecutor = ManagerThreadExecutor(session)
     var treeState: XDebuggerTreeState? = null

@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.idea.debugger.coroutine.proxy.mirror
 import com.sun.jdi.Method
 import com.sun.jdi.ObjectReference
 import org.jetbrains.kotlin.idea.debugger.evaluate.DefaultExecutionContext
+import java.lang.StackTraceElement
 
 class CoroutineContext(context: DefaultExecutionContext) :
     BaseMirror<MirrorOfCoroutineContext>("kotlin.coroutines.CoroutineContext", context) {
@@ -24,7 +25,7 @@ class CoroutineContext(context: DefaultExecutionContext) :
     }
 
     fun <T> getElementValue(value: ObjectReference, context: DefaultExecutionContext, keyProvider: ContextKey<T>): T? {
-        val elementValue = objectValue(value, getContextElement, context, keyProvider.key()) ?: return null
+        val elementValue = objectValue(value, getContextElement, context, keyProvider.key() ?: return null) ?: return null
         return keyProvider.mirror(elementValue, context)
     }
 }
@@ -37,7 +38,7 @@ data class MirrorOfCoroutineContext(
 )
 
 abstract class ContextKey<T>(name: String, context: DefaultExecutionContext) : BaseMirror<T>(name, context) {
-    abstract fun key() : ObjectReference
+    abstract fun key() : ObjectReference?
 }
 
 class CoroutineName(context: DefaultExecutionContext) : ContextKey<String>("kotlinx.coroutines.CoroutineName", context) {
