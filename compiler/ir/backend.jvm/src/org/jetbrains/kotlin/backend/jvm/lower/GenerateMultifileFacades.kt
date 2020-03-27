@@ -215,7 +215,7 @@ private fun IrSimpleFunction.createMultifileDelegateIfNeeded(
 
     val function = buildFun {
         updateFrom(target)
-        origin = if (shouldGeneratePartHierarchy) IrDeclarationOrigin.FAKE_OVERRIDE else JvmLoweredDeclarationOrigin.MULTIFILE_BRIDGE
+        isFakeOverride = shouldGeneratePartHierarchy
         name = target.name
     }
 
@@ -225,9 +225,11 @@ private fun IrSimpleFunction.createMultifileDelegateIfNeeded(
     function.annotations = target.annotations
 
     if (shouldGeneratePartHierarchy) {
+        function.origin = IrDeclarationOrigin.FAKE_OVERRIDE
         function.body = null
         function.overriddenSymbols = listOf(symbol)
     } else {
+        function.origin = JvmLoweredDeclarationOrigin.MULTIFILE_BRIDGE
         function.overriddenSymbols = overriddenSymbols.toList()
         function.body = context.createIrBuilder(function.symbol).irBlockBody {
             +irReturn(irCall(target).also { call ->
