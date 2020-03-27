@@ -15560,6 +15560,16 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
                     KotlinTestUtils.runTest(this::doTest, TargetBackend.JVM, testDataFilePath);
                 }
 
+                @TestMetadata("accessor.kt")
+                public void testAccessor() throws Exception {
+                    runTest("compiler/testData/codegen/box/jvm8/defaults/allCompatibility/accessor.kt");
+                }
+
+                @TestMetadata("accessorFromCompanion.kt")
+                public void testAccessorFromCompanion() throws Exception {
+                    runTest("compiler/testData/codegen/box/jvm8/defaults/allCompatibility/accessorFromCompanion.kt");
+                }
+
                 public void testAllFilesPresentInAllCompatibility() throws Exception {
                     KotlinTestUtils.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/jvm8/defaults/allCompatibility"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JVM, true);
                 }
@@ -15622,6 +15632,11 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
                 @TestMetadata("interfaceExtension.kt")
                 public void testInterfaceExtension() throws Exception {
                     runTest("compiler/testData/codegen/box/jvm8/defaults/allCompatibility/interfaceExtension.kt");
+                }
+
+                @TestMetadata("privateFunInInterface.kt")
+                public void testPrivateFunInInterface() throws Exception {
+                    runTest("compiler/testData/codegen/box/jvm8/defaults/allCompatibility/privateFunInInterface.kt");
                 }
 
                 @TestMetadata("propertyAnnotation.kt")
@@ -15744,6 +15759,16 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
                     KotlinTestUtils.runTest(this::doTest, TargetBackend.JVM, testDataFilePath);
                 }
 
+                @TestMetadata("accessor.kt")
+                public void testAccessor() throws Exception {
+                    runTest("compiler/testData/codegen/box/jvm8/defaults/noDefaultImpls/accessor.kt");
+                }
+
+                @TestMetadata("accessorFromCompanion.kt")
+                public void testAccessorFromCompanion() throws Exception {
+                    runTest("compiler/testData/codegen/box/jvm8/defaults/noDefaultImpls/accessorFromCompanion.kt");
+                }
+
                 public void testAllFilesPresentInNoDefaultImpls() throws Exception {
                     KotlinTestUtils.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/jvm8/defaults/noDefaultImpls"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JVM, true);
                 }
@@ -15801,6 +15826,11 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
                 @TestMetadata("interfaceExtension.kt")
                 public void testInterfaceExtension() throws Exception {
                     runTest("compiler/testData/codegen/box/jvm8/defaults/noDefaultImpls/interfaceExtension.kt");
+                }
+
+                @TestMetadata("privateFunInInterface.kt")
+                public void testPrivateFunInInterface() throws Exception {
+                    runTest("compiler/testData/codegen/box/jvm8/defaults/noDefaultImpls/privateFunInInterface.kt");
                 }
 
                 @TestMetadata("propertyAnnotation.kt")
