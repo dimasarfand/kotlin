@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.ir.declarations.impl.IrFileImpl
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrClassReferenceImpl
+import org.jetbrains.kotlin.ir.types.defaultType
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformer
@@ -220,9 +221,9 @@ private fun IrSimpleFunction.createMultifileDelegateIfNeeded(
     }
 
     function.copyParameterDeclarationsFrom(target)
-    function.returnType = target.returnType
+    function.returnType = target.returnType.substitute(target.typeParameters, function.typeParameters.map { it.defaultType })
     function.parent = facadeClass
-    function.annotations = target.annotations
+    function.annotations = target.annotations.map { it.deepCopyWithSymbols() }
 
     if (shouldGeneratePartHierarchy) {
         function.origin = IrDeclarationOrigin.FAKE_OVERRIDE
